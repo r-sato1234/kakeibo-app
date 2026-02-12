@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Household;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -35,11 +36,22 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // ユーザー作成
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Household 作成（owner_id = 作成したユーザーID）
+        $household = Household::create([
+            'name' => $user->name . 'の家族',
+            'owner_id' => $user->id,
+        ]);
+
+        // User に household_id をセット
+        $user->household_id = $household->id;
+        $user->save();
 
         event(new Registered($user));
 
