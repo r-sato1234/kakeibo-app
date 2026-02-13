@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,10 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('transactions', TransactionController::class);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('categories', CategoryController::class);
 });
 
 require __DIR__.'/auth.php';
