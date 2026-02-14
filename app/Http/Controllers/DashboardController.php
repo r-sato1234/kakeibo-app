@@ -40,12 +40,66 @@ class DashboardController extends Controller
             ->with('category')
             ->get();
 
+        // 過去12ヶ月の推移データ
+        $monthlyLabels = [];
+        $monthlyIncome = [];
+        $monthlyExpense = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+
+            $date = now()->subMonths($i);
+
+            $startMonth = $date->copy()->startOfMonth();
+            $endMonth   = $date->copy()->endOfMonth();
+
+            $label = $date->format('Y-m');
+
+            $monthlyLabels[] = $label;
+
+            $monthlyIncome[] = Transaction::where('household_id', $household->id)
+                ->whereBetween('date', [$startMonth, $endMonth])
+                ->where('type', 'income')
+                ->sum('amount');
+
+            $monthlyExpense[] = Transaction::where('household_id', $household->id)
+                ->whereBetween('date', [$startMonth, $endMonth])
+                ->where('type', 'expense')
+                ->sum('amount');
+        }
+
+        $pieLabels = $categoryExpenses->pluck('category.name');
+        $pieData   = $categoryExpenses->pluck('total');
+
+        $yearStart = now()->startOfYear();
+        $yearEnd   = now()->endOfYear();
+
+        $yearIncome = Transaction::where('household_id', $household->id)
+            ->whereBetween('date', [$yearStart, $yearEnd])
+            ->where('type', 'income')
+            ->sum('amount');
+
+        $yearExpense = Transaction::where('household_id', $household->id)
+            ->whereBetween('date', [$yearStart, $yearEnd])
+            ->where('type', 'expense')
+            ->sum('amount');
+
+        $yearBalance = $yearIncome - $yearExpense;
+
+
         return view('dashboard', compact(
             'income',
             'expense',
             'balance',
             'categoryExpenses',
-            'selectedMonth'
+            'selectedMonth',
+            'monthlyLabels',
+            'monthlyIncome',
+            'monthlyExpense',
+            'pieLabels',
+            'pieData',
+            'yearIncome',
+            'yearExpense',
+            'yearBalance',
         ));
     }
 }

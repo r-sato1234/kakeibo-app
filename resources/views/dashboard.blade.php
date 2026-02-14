@@ -89,9 +89,141 @@
 
                     </div>
                 </div>
+
+                {{-- 月別推移グラフ --}}
+                <div class="mt-10">
+                    <div class="bg-white p-6 rounded-lg shadow">
+
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            月別推移（過去12ヶ月）
+                        </h3>
+
+                        <canvas id="monthlyChart"></canvas>
+
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <div class="bg-white p-6 rounded-lg shadow">
+
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            年間サマリ（{{ now()->year }}年）
+                        </h3>
+
+                        <div class="space-y-4">
+
+                            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                                <p class="text-sm text-gray-500">年間収入</p>
+                                <p class="text-2xl font-bold text-green-600">
+                                    ¥{{ number_format($yearIncome) }}
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                                <p class="text-sm text-gray-500">年間支出</p>
+                                <p class="text-2xl font-bold text-red-600">
+                                    ¥{{ number_format($yearExpense) }}
+                                </p>
+                            </div>
+
+                            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                                <p class="text-sm text-gray-500">年間差額</p>
+                                <p class="text-2xl font-bold text-blue-600">
+                                    ¥{{ number_format($yearBalance) }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+                {{-- カテゴリ別支出グラフ --}}
+                <div class="mt-10">
+                    <div class="bg-white p-6 rounded-lg shadow">
+
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            カテゴリ別支出（円グラフ）
+                        </h3>
+
+                        <canvas id="categoryPieChart"></canvas>
+
+                    </div>
+                </div>
+
+
             </div>
 
         </div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const ctx = document.getElementById('monthlyChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($monthlyLabels),
+            datasets: [
+                {
+                    label: '収入',
+                    data: @json($monthlyIncome),
+                    borderColor: 'rgb(34,197,94)',
+                    backgroundColor: 'rgba(34,197,94,0.2)',
+                    tension: 0.3
+                },
+                {
+                    label: '支出',
+                    data: @json($monthlyExpense),
+                    borderColor: 'rgb(239,68,68)',
+                    backgroundColor: 'rgba(239,68,68,0.2)',
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const pieCtx = document.getElementById('categoryPieChart');
+
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: @json($pieLabels),
+            datasets: [{
+                data: @json($pieData),
+                backgroundColor: [
+                    '#60A5FA',
+                    '#34D399',
+                    '#FBBF24',
+                    '#F87171',
+                    '#A78BFA',
+                    '#F472B6',
+                    '#FB923C'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+        }
+    });
+
+});
+</script>
 </x-app-layout>
