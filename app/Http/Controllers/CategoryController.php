@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -40,20 +41,17 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CategoryRequest $request)
     {
         Gate::authorize('create', Category::class);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
 
         auth()->user()->household->categories()->create([
             'household_id' => auth()->user()->household_id,
             'name' => $request->name,
         ]);
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')
+            ->with('success', 'カテゴリを作成しました。');
     }
 
 
@@ -79,19 +77,16 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(CategoryRequest $request, Category $category)
     {
         Gate::authorize('update', $category);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
 
         $category->update([
             'name' => $request->name,
         ]);
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')
+            ->with('success', 'カテゴリを更新しました。');
     }
 
 
@@ -104,6 +99,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index')
+            ->with('success', 'カテゴリを削除しました。');
     }
 }

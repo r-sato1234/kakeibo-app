@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Requests\UpdateTransactionRequest;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class TransactionController extends Controller
 {
@@ -45,30 +47,14 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTransactionRequest $request)
     {
         Gate::authorize('create', Transaction::class);
-
-        $request->validate([
-            'category_id' => [
-                'required',
-                Rule::exists('categories', 'id')
-                    ->where('household_id', auth()->user()->household_id),
-            ],
-            'type' => 'required|in:income,expense',
-            'amount' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'note' => 'nullable|string|max:255',
-        ]);
 
         auth()->user()->household->transactions()->create([
             'user_id' => auth()->id(),
             'household_id' => auth()->user()->household_id,
-            'category_id' => $request->category_id,
-            'type' => $request->type,
-            'amount' => $request->amount,
-            'date' => $request->date,
-            'note' => $request->note,
+            ...$request->validated(),
         ]);
 
         return redirect()
@@ -106,29 +92,11 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Transaction $transaction)
+    public function update(UpdateTransactionRequest $request, Transaction $transaction)
     {
         Gate::authorize('update', $transaction);
 
-        $request->validate([
-            'category_id' => [
-                'required',
-                Rule::exists('categories', 'id')
-                    ->where('household_id', auth()->user()->household_id),
-            ],
-            'type' => 'required|in:income,expense',
-            'amount' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'note' => 'nullable|string|max:255',
-        ]);
-
-        $transaction->update($request->only([
-            'category_id',
-            'type',
-            'amount',
-            'date',
-            'note'
-        ]));
+        $transaction->update($request->validated());
 
         return redirect()
             ->route('transactions.index')
